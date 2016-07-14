@@ -5,7 +5,34 @@ using namespace std;
 #define IDC_OK_BUTTON 101
 #define IDC_CANCEL_BUTTON 102
 #define RADIO_BUTTON1 103
+#define OPTION_SIZE 10
 #pragma comment(lib, "comctl32.lib")
+
+class Option {
+
+public:
+	LPCTSTR OptDesc;
+	INT NextQn;
+	Option(LPCTSTR desc, INT qn): OptDesc(desc), NextQn(qn) {}
+	Option(): OptDesc(TEXT("")), NextQn(0) {}
+};
+
+class Question {
+
+public:
+	LPCTSTR qnDesc;
+	INT Index;
+	INT NumOfOptions;
+	INT PrevQn;
+	Option options[OPTION_SIZE];
+
+	Question() : qnDesc(TEXT("")), Index(0), NumOfOptions(0), PrevQn(0) {}
+	Question(LPCTSTR desc, INT idx, INT numOpt, INT prev) : qnDesc(desc), Index(idx), NumOfOptions(numOpt), PrevQn(prev) {}
+	void addOption(Option opt, INT idx) {
+		if (idx < OPTION_SIZE)
+			options[idx] = opt;
+	}
+};
 
 class frame_window {
 private:
@@ -14,21 +41,50 @@ private:
 	HCURSOR cursor_arrow;
 	HWND window_handle;
 	HWND text_handle_1;
-	HWND text_handle_2;
-	HWND radiobutton_handle_1;
-	HWND radiobutton_handle_2;
-	HWND radiobutton_handle_3;
-	HWND radiobutton_handle_4;
-	HWND radiobutton_handle_5;
-	HWND radiobutton_handle_6;
-	HWND radiobutton_handle_7;
 	HWND okbutton_handle;
 	HWND backbutton_handle;
 	RECT client_rectangle;
 	int pressed;
 	int count = 0;
+	int currQn = 0;
+	//number of questions
+	int numQns = 3;
+	Question* Qns;
+	HWND handlers[10];
+
+	//place to set questions
+	void setQns() {
+		Qns = new Question[numQns];
+
+		Option opt01 = Option(TEXT("Good"), 1);
+		Option opt02 = Option(TEXT("So so"), 2);
+		Option opt03 = Option(TEXT("Bad"), 2);
+		Question qn0 = Question(TEXT("How are you"), 0, 3, -1);
+		qn0.addOption(opt01, 0);
+		qn0.addOption(opt02, 1);
+		qn0.addOption(opt03, 2);
+		Qns[0] = qn0;
+
+
+		Option opt11 = Option(TEXT("Yes"), 1);
+		Option opt12 = Option(TEXT("No"), 2);
+		Question qn1 = Question(TEXT("Are you happy?"), 0, 2, 1);
+		qn1.addOption(opt11, 0);
+		qn1.addOption(opt12, 1);
+		Qns[1] = qn1;
+
+		Option opt21 = Option(TEXT("Yes"), 1);
+		Option opt22 = Option(TEXT("No"), 2);
+		Question qn2 = Question(TEXT("Do you like?"), 0, 2, 1);
+		qn2.addOption(opt21, 0);
+		qn2.addOption(opt22, 1);
+		Qns[2] = qn2;
+	}
+
+	
 public:
 	frame_window(LPWSTR window_class_identity) : window_class_name(window_class_identity), pressed(-1) {
+		setQns();
 		int screen_width = GetSystemMetrics(SM_CXFULLSCREEN);
 		int screen_height = GetSystemMetrics(SM_CYFULLSCREEN);
 		instance_handle = GetModuleHandle(NULL);
@@ -48,66 +104,49 @@ public:
 			L"Radio button Example",
 			WS_OVERLAPPEDWINDOW |
 			WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-			100, 100, screen_width - 200,
-			screen_height - 200, NULL, NULL,
+			100, 100, 600,
+			300, NULL, NULL,
 			instance_handle, NULL);
 		RECT client_rectangle;
 		GetClientRect(window_handle, &client_rectangle);
 		int width = client_rectangle.right - client_rectangle.left;
 		int height = client_rectangle.bottom - client_rectangle.top;
+
+		//initialize question UI
+		int numOpt = Qns[currQn].NumOfOptions;
 		text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
-			L"How did you find your experience at Dream-In-Code?",
+			Qns[currQn].qnDesc,
 			WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
 			20, 30, 400,
-			130, window_handle, (HMENU)11,
+			numOpt * 24 + 30, window_handle, (HMENU)11,
 			instance_handle, NULL);
-		text_handle_2 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
-			L"Did you find the help you needed?",
-			WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-			20, 170, 400,
-			130, window_handle, (HMENU)11,
-			instance_handle, NULL);
-		radiobutton_handle_1 = CreateWindowEx(0, L"Button", L"Good",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
-			4, 20, 280,
-			20, text_handle_1, (HMENU)RADIO_BUTTON1,
-			instance_handle, NULL);
-		radiobutton_handle_2 = CreateWindowEx(0, L"Button", L"OK",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-			4, 44, 280,
-			20, text_handle_1, (HMENU)12,
-			instance_handle, NULL);
-		radiobutton_handle_3 = CreateWindowEx(0, L"Button", L"Bad",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-			4, 68, 280,
-			20, text_handle_1, (HMENU)11,
-			instance_handle, NULL);
-		radiobutton_handle_4 = CreateWindowEx(0, L"Button", L"Terrible",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-			4, 92, 280,
-			20, text_handle_1, (HMENU)12,
-			instance_handle, NULL);
-		radiobutton_handle_5 = CreateWindowEx(0, L"Button", L"Yes",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
-			4, 20, 280,
-			20, text_handle_2, (HMENU)11,
-			instance_handle, NULL);
-		radiobutton_handle_6 = CreateWindowEx(0, L"Button", L"Almost",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-			4, 44, 280,
-			20, text_handle_2, (HMENU)12,
-			instance_handle, NULL);
-		radiobutton_handle_7 = CreateWindowEx(0, L"Button", L"No",
-			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-			4, 68, 280,
-			20, text_handle_2, (HMENU)11,
-			instance_handle, NULL);
+
+		for (int i = 0; i < numOpt; i++) {
+			int y = 20 + i * 24;
+			int menu = 103 + i;
+
+			if(i > 0) {
+				handlers[i] = CreateWindowEx(0, L"Button", Qns[currQn].options[i].OptDesc,
+					WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+					4, y, 280,
+					20, text_handle_1, (HMENU)menu,
+					instance_handle, NULL);
+			}
+			else {
+				handlers[i] = CreateWindowEx(0, L"Button", Qns[currQn].options[i].OptDesc,
+					WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
+					4, y, 280,
+					20, text_handle_1, (HMENU)menu,
+					instance_handle, NULL);
+			}
+		}
+
 		okbutton_handle = CreateWindowEx(0,
 			L"BUTTON",  // Predefined class; Unicode assumed 
 			L"OK",      // Button text 
 			WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,  // Styles 
 			290,         // x position 
-			310,         // y position 
+			numOpt * 24 + 70,         // y position 
 			60,        // Button width
 			30,        // Button height
 			window_handle,     // Parent window
@@ -120,7 +159,7 @@ public:
 			L"Cancel",      // Button text 
 			WS_TABSTOP | WS_VISIBLE | WS_CHILD,  // Styles 
 			360,         // x position 
-			310,         // y position 
+			numOpt * 24 + 70,         // y position 
 			60,        // Button width
 			30,        // Button height
 			window_handle,     // Parent window
@@ -128,33 +167,97 @@ public:
 			instance_handle,
 			NULL);      // Pointer not needed.
 		//backbutton_handle
-		SendMessage(radiobutton_handle_1, BM_SETCHECK, BST_CHECKED, 0);
-		SendMessage(radiobutton_handle_5, BM_SETCHECK, BST_CHECKED, 0);
+		
+		SendMessage(handlers[0], BM_SETCHECK, BST_CHECKED, 0);
+		//SendMessage(radiobutton_handle_5, BM_SETCHECK, BST_CHECKED, 0);
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
 		SetWindowLongPtr(window_handle, GWL_USERDATA, (LONG)this);
 		ShowWindow(window_handle, SW_SHOW);
 		UpdateWindow(window_handle);
 	}
 	~frame_window() {
+		delete[] Qns;
 		UnregisterClass(window_class_name, instance_handle);
 	}
-	void redrawWindow() {
-		count++;
-		TCHAR szBuffer[10];
-		wsprintf(szBuffer, TEXT("Player %d"), count);
-		int msgboxID = MessageBox(
-			NULL,
-			L"Radio button",
-			szBuffer,
-			MB_ICONEXCLAMATION | MB_YESNO
-			);
+
+	void cleanWnds() {
+		INT numOpt = Qns[currQn].NumOfOptions;
+		
+		for (INT i = 0; i < numOpt; i++) {
+			DestroyWindow(handlers[i]);
+			handlers[i] = HWND();
+
+		}
+	}
+
+	void redrawWindow(bool next) {
+		int y = IsDlgButtonChecked(text_handle_1, 103);
+		int z = IsDlgButtonChecked(text_handle_1, 104);
+		int s = IsDlgButtonChecked(text_handle_1, 105);
+		int index = -1;
+		for (int i = 0; i < getNumBtns(); i++) {
+			int id = 103 + i;
+			if (IsDlgButtonChecked(text_handle_1, id)) {
+				index = i;
+			}
+		}
+
+		cleanWnds();
+		RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
+
+		if (!next) {
+			currQn = Qns[currQn].PrevQn;
+		} else if (index >= 0) {
+			currQn = Qns[currQn].options[index].NextQn;
+		}
+		else {
+			return;
+		}
+
+		INT numOpt = Qns[currQn].NumOfOptions;
+
+		DestroyWindow(text_handle_1);
+		RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
+
 
 		text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
-			L"Change this code?",
+			Qns[currQn].qnDesc,
 			WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
 			20, 30, 400,
-			130, window_handle, (HMENU)11,
+			numOpt * 24 + 30, window_handle, (HMENU)11,
 			instance_handle, NULL);
+
+		//SetWindowText(text_handle_1, Qns[currQn].qnDesc);
+		//SetWindowPos(text_handle_1, HWND_BOTTOM, 20, 30, 400, numOpt * 24 + 30, SWP_SHOWWINDOW);
+		//MoveWindow(text_handle_1, 20, 30, 400, numOpt * 24 + 30, true);
+		//AdjustWindowRectEx()
+
+		for (INT i = 0; i < numOpt; i++) {
+			INT y = 20 + i * 24;
+			INT menu = 103 + i;
+
+			if (i > 0) {
+				handlers[i] = CreateWindowEx(0, L"Button", Qns[currQn].options[i].OptDesc,
+					WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+					4, y, 280,
+					20, text_handle_1, (HMENU)menu,
+					instance_handle, NULL);
+			}
+			else {
+				handlers[i] = CreateWindowEx(0, L"Button", Qns[currQn].options[i].OptDesc,
+					WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
+					4, y, 280,
+					20, text_handle_1, (HMENU)menu,
+					instance_handle, NULL);
+			}
+		}
+
+		SendMessage(handlers[0], BM_SETCHECK, BST_CHECKED, 0);
+
+	}
+
+	int getNumBtns() {
+		return Qns[currQn].NumOfOptions;
 	}
 
 	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
@@ -216,20 +319,19 @@ public:
 		{
 			switch (LOWORD(wparam))
 			{
-				//RADIO_BUTTON1
-			case RADIO_BUTTON1: {
 
-			}
-			break;
 			case IDC_OK_BUTTON: {
 				LONG x = GetWindowLong(GetWindow(window_handle, GW_CHILD), GWL_ID);
-				if (IsDlgButtonChecked(GetWindow(window_handle, GW_CHILD), RADIO_BUTTON1)) {
-					This->redrawWindow();
-				}
+				int y = IsDlgButtonChecked(GetWindow(window_handle, GW_CHILD), 103);
+				This->redrawWindow(true);
 				
 			}
 			break;
 			case IDC_CANCEL_BUTTON: {
+				LONG x = GetWindowLong(GetWindow(window_handle, GW_CHILD), GWL_ID);
+						//RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
+						InvalidateRect(window_handle, NULL, TRUE);
+						This->redrawWindow(false);
 			}
 			break;
 			default:
