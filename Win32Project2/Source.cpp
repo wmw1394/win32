@@ -1,5 +1,5 @@
 #include <windows.h>  
- 
+
 using namespace std;
 
 #define IDC_OK_BUTTON 101
@@ -329,7 +329,9 @@ public:
 				buff = new TCHAR[1024]();
 				GetWindowText(handlers[1], buff, len);
 				Anws[currQn].setText(buff);
-				
+				int x = _wtoi(buff);
+				bool bol = isdigit(x);
+
 				//reset index in order to navigate to next question
 				index = 0;
 			}
@@ -450,10 +452,11 @@ public:
 			RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
 
 
-			text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
+			text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Edit",
 				TEXT("Please check your credentials and try again."),
-				WS_CHILD | WS_VISIBLE,
-				20, 30, 400,
+				WS_CHILD | WS_VISIBLE | WS_VSCROLL |
+				ES_LEFT | ES_MULTILINE | ES_READONLY,
+				20, 60, 400,
 				110, window_handle, (HMENU)11,
 				instance_handle, NULL);
 			break;
@@ -465,10 +468,11 @@ public:
 			RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
 
 
-			text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
-				TEXT("Please power off your launchpad for 220 minutes and reattempte a connection."),
-				WS_CHILD | WS_VISIBLE,
-				20, 30, 400,
+			text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Edit",
+				TEXT("Please power off your launchpad for 20 minutes and reattempte a connection."),
+				WS_CHILD | WS_VISIBLE | WS_VSCROLL |
+				ES_LEFT | ES_MULTILINE | ES_READONLY,
+				20, 60, 400,
 				110, window_handle, (HMENU)11,
 				instance_handle, NULL);
 			break;		
@@ -480,10 +484,11 @@ public:
 				RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
 
 
-				text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
+				text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Edit",
 					TEXT("Please check if the APN you entered is correct."),
-					WS_CHILD | WS_VISIBLE,
-					20, 30, 400,
+					WS_CHILD | WS_VISIBLE | WS_VSCROLL |
+					ES_LEFT | ES_MULTILINE | ES_READONLY,
+					20, 60, 400,
 					110, window_handle, (HMENU)11,
 					instance_handle, NULL);
 				break;
@@ -494,10 +499,11 @@ public:
 			RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE);
 
 			if (Anws[14].int_result == 1 && Anws[11].int_result == 1 && Anws[15].int_result == 0) {
-				text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Button",
+				text_handle_1 = CreateWindowEx(WS_EX_TRANSPARENT, L"Edit",
 					TEXT("Please check link connection."),
-					WS_CHILD | WS_VISIBLE,
-					20, 30, 400,
+					WS_CHILD | WS_VISIBLE | WS_VSCROLL |
+					ES_LEFT | ES_MULTILINE | ES_READONLY,
+					20, 60, 400,
 					110, window_handle, (HMENU)11,
 					instance_handle, NULL);
 			}
